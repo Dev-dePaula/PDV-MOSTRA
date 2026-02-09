@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Restaurante - Caixa & Dashboard</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-title">🍽️ Sistema Restaurante</div>
+      <div class="muted" style="margin-bottom:12px">Acesso restrito</div>
+
+      <form id="loginForm" class="form">
+        <label class="field">
+          <span>Email</span>
+          <input id="loginEmail" type="email" placeholder="adm@gmail.com" required />
+        </label>
+
+        <label class="field">
+          <span>Senha</span>
+          <input id="loginPass" type="password" placeholder="resto123@" required />
+        </label>
+
+        <button class="btn primary" type="submit">Entrar</button>
+        <div class="muted" style="margin-top:10px;font-size:12px">
+          Dica: adm@gmail.com / resto123@
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div id="appRoot" class="app-root">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">🍽️</div>
+        <div>
+          <div class="brand-title">Sistema Restaurante</div>
+          <div class="brand-sub">Caixa • Cardápio • Dashboard</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <nav class="tabs">
+          <button type="button" class="tab is-active" data-view="pos">Caixa</button>
+          <button type="button" class="tab" data-view="menu">Cardápio</button>
+          <button type="button" class="tab" data-view="admin">Dashboard</button>
+        </nav>
+        <button type="button" class="btn danger" id="btnLogout">Sair</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- CAIXA -->
+      <section id="view-pos" class="view is-visible">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <h2>🧾 Caixa (PDV)</h2>
+              <div class="muted">Selecione itens e finalize o pedido (Mesa/Comanda ou Delivery)</div>
+            </div>
+
+            <div class="filters">
+              <label class="field">
+                <span>Categoria</span>
+                <select id="posCategory"></select>
+              </label>
+
+              <label class="field">
+                <span>Buscar</span>
+                <input id="posSearch" type="text" placeholder="Ex: Coxinha, Marmita..." />
+              </label>
+            </div>
+
+            <div id="posProducts" class="products"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>🛒 Carrinho</h2>
+              <div class="muted" id="cartCount">0 itens</div>
+            </div>
+
+            <div class="subcard" style="margin-bottom:12px">
+              <h3 class="h3title">📌 Tipo do Pedido</h3>
+
+              <div class="grid-2-tight">
+                <label class="field">
+                  <span>Tipo</span>
+                  <select id="orderType">
+                    <option value="LOCAL">Mesa/Comanda (Local)</option>
+                    <option value="DELIVERY">Delivery (Entrega)</option>
+                  </select>
+                </label>
+
+                <label class="field" id="wrapComanda">
+                  <span>Mesa/Comanda</span>
+                  <input id="orderComanda" placeholder="Ex: Mesa 3 / Comanda 12" />
+                </label>
+              </div>
+
+              <div id="wrapDelivery" class="delivery-box" style="display:none; margin-top:12px">
+                <div class="grid-2-tight">
+                  <label class="field">
+                    <span>Cliente</span>
+                    <input id="dName" placeholder="Nome do cliente" />
+                  </label>
+
+                  <label class="field">
+                    <span>Telefone</span>
+                    <input id="dPhone" placeholder="(xx) 9xxxx-xxxx" />
+                  </label>
+                </div>
+
+                <label class="field">
+                  <span>Endereço</span>
+                  <input id="dAddress" placeholder="Rua, número, complemento" />
+                </label>
+
+                <div class="grid-2-tight">
+                  <label class="field">
+                    <span>Bairro</span>
+                    <input id="dDistrict" placeholder="Ex: Centro" />
+                  </label>
+
+                  <label class="field">
+                    <span>Taxa de entrega (R$)</span>
+                    <input id="dFee" type="number" step="0.01" min="0" placeholder="Ex: 5.00" />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div id="cartItems" class="cart"></div>
+
+            <div class="summary">
+              <div class="summary-row">
+                <span>Subtotal</span>
+                <strong id="cartSubtotal">R$ 0,00</strong>
+              </div>
+
+              <div class="summary-row">
+                <label class="field-inline">
+                  <span>Desconto</span>
+                  <input id="discount" type="number" step="0.01" min="0" placeholder="0.00" style="max-width:160px" />
+                </label>
+              </div>
+
+              <div class="summary-row">
+                <span>Taxa entrega</span>
+                <strong id="deliveryFeeLabel">R$ 0,00</strong>
+              </div>
+
+              <div class="summary-row">
+                <span>Total</span>
+                <strong id="grandTotal">R$ 0,00</strong>
+              </div>
+
+              <div class="summary-row">
+                <label class="field-inline">
+                  <span>Pagamento</span>
+                  <select id="paymentMethod">
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Pix">Pix</option>
+                    <option value="Cartão">Cartão</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="summary-actions">
+                <button type="button" class="btn danger" id="btnClearCart">Limpar</button>
+                <button type="button" class="btn primary" id="btnCheckout">Finalizar Pedido</button>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="kpis">
+                <div class="kpi">
+                  <div class="kpi-title">Total do dia</div>
+                  <div class="kpi-value" id="kpiTotalDay">R$ 0,00</div>
+                </div>
+                <div class="kpi">
+                  <div class="kpi-title">Vendas hoje</div>
+                  <div class="kpi-value" id="kpiSalesCount">0</div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <h3 class="h3">Últimas vendas</h3>
+              <div id="lastSales" class="last-sales"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARDÁPIO -->
+      <section id="view-menu" class="view">
+        <div class="card">
+          <div class="card-header">
+            <h2>📋 Cardápio</h2>
+            <div class="muted">Itens cadastrados no dashboard aparecem aqui</div>
+          </div>
+
+          <div class="filters">
+            <label class="field">
+              <span>Categoria</span>
+              <select id="menuCategory"></select>
+            </label>
+
+            <label class="field">
+              <span>Buscar</span>
+              <input id="menuSearch" type="text" placeholder="Ex: Pastel, Prato feito..." />
+            </label>
+          </div>
+
+          <div id="menuList" class="menu-list"></div>
+        </div>
+      </section>
+
+      <!-- DASHBOARD -->
+      <section id="view-admin" class="view">
+        <div class="grid-2">
+          <!-- COLUNA 1: CADASTRO -->
+          <div class="card">
+            <div class="card-header">
+              <h2>⚙️ Dashboard - Cadastros</h2>
+              <div class="muted">Cadastre pratos e salgados com valores (vai direto pro PDV)</div>
+            </div>
+
+            <div class="subcard">
+              <h3 class="h3title">🍛 Cadastro de Pratos</h3>
+              <form id="formPrato" class="form">
+                <label class="field">
+                  <span>Nome do prato</span>
+                  <input id="pratoName" required placeholder="Ex: Prato feito (Bife), Marmita P (Frango)..." />
+                </label>
+
+                <div class="grid-2-tight">
+                  <label class="field">
+                    <span>Tipo</span>
+                    <select id="pratoTipo">
+                      <option value="Prato Feito">Prato Feito</option>
+                      <option value="Marmita">Marmita</option>
+                    </select>
+                  </label>
+
+                  <label class="field">
+                    <span>Preço (R$)</span>
+                    <input id="pratoPrice" required type="number" step="0.01" min="0" placeholder="Ex: 19.90" />
+                  </label>
+                </div>
+
+                <div class="form-actions">
+                  <button class="btn primary" type="submit">Salvar Prato</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="subcard">
+              <h3 class="h3title">🥟 Cadastro de Salgados</h3>
+              <form id="formSalgado" class="form">
+                <label class="field">
+                  <span>Nome do salgado</span>
+                  <input id="salgadoName" required placeholder="Ex: Coxinha, Kibe, Esfiha..." />
+                </label>
+
+                <div class="grid-2-tight">
+                  <label class="field">
+                    <span>Tipo</span>
+                    <select id="salgadoTipo">
+                      <option value="Salgado Frito">Salgado Frito</option>
+                      <option value="Salgado Assado">Salgado Assado</option>
+                    </select>
+                  </label>
+
+                  <label class="field">
+                    <span>Preço (R$)</span>
+                    <input id="salgadoPrice" required type="number" step="0.01" min="0" placeholder="Ex: 6.50" />
+                  </label>
+                </div>
+
+                <div class="form-actions">
+                  <button class="btn primary" type="submit">Salvar Salgado</button>
+                  <button type="button" class="btn" id="btnSeed">Criar exemplos</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- COLUNA 2: LISTAGEM + RELATÓRIO -->
+          <div class="card">
+            <div class="card-header">
+              <h2>📦 Itens cadastrados</h2>
+              <div class="muted">Tudo que você cadastrar aparece no PDV e Cardápio</div>
+            </div>
+
+            <div class="filters">
+              <label class="field">
+                <span>Filtrar categoria</span>
+                <select id="adminCategory"></select>
+              </label>
+              <button type="button" class="btn danger" id="btnResetAll" title="Apaga produtos e vendas">Resetar tudo</button>
+            </div>
+
+            <div id="adminProducts" class="admin-products"></div>
+
+            <div class="divider"></div>
+
+            <div class="subcard">
+              <h3 class="h3title">📊 Relatório por Período</h3>
+
+              <div class="grid-2-tight">
+                <label class="field">
+                  <span>Data início</span>
+                  <input id="repStart" type="date" />
+                </label>
+                <label class="field">
+                  <span>Data fim</span>
+                  <input id="repEnd" type="date" />
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn primary" id="btnRunReport">Gerar relatório</button>
+                <button type="button" class="btn" id="btnClearReport">Limpar</button>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="kpis">
+                <div class="kpi">
+                  <div class="kpi-title">Total no período</div>
+                  <div class="kpi-value" id="repTotal">R$ 0,00</div>
+                </div>
+                <div class="kpi">
+                  <div class="kpi-title">Qtd. pedidos</div>
+                  <div class="kpi-value" id="repCount">0</div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+              <div id="reportList" class="last-sales"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span class="muted">MVP local (localStorage) • Mesa/Comanda • Delivery • Relatórios</span>
+    </footer>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
